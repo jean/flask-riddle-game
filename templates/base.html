@@ -50,6 +50,9 @@
           <li class="nav-item hvr-grow">
             <a class="nav-link" href="{{ url_for('about') }}"><i class="fas fa-question-circle"></i> About</a>
           </li>
+          <li class="nav-item hvr-grow">
+            <img src="{{ qrcode(url_for('index', _external=True)) }}">
+          </li>
         </ul>
       </div>
     </div>
