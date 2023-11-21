@@ -1,0 +1,5 @@
+# Ignore cached Python files
+*.pyc
+__pycache__/
+# Ignore game data
+data/
