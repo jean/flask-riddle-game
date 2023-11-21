@@ -2,11 +2,13 @@ import os
 import sys
 from importlib import reload
 from flask import Flask, render_template, redirect, request, url_for
+from flask_qrcode import QRcode
 
 # Needed for encoding to utf8
 reload(sys)
 
 app = Flask(__name__)
+qrcode = QRcode(app)
 app.secret_key = 'some_secret'
 data = []
 
