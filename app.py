@@ -3,12 +3,15 @@ import sys
 from importlib import reload
 from flask import Flask, render_template, redirect, request, url_for
 from flask_qrcode import QRcode
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+
 
 # Needed for encoding to utf8
 reload(sys)
 
 app = Flask(__name__)
 qrcode = QRcode(app)
+FlaskInstrumentor().instrument_app(app)
 app.secret_key = 'some_secret'
 data = []
 
@@ -231,13 +234,13 @@ def about():
 # HIGHSCORE PAGE
 @app.route('/highscores')
 def highscores():
-
     usernames_and_scores = get_scores()
-
     return render_template("highscores.html", page_title="Highscores", usernames_and_scores=usernames_and_scores)
 
 
 if __name__ == '__main__':
+    import pdb; pdb.set_trace()
+    print(os.environ.get("HONEYCOMB_API_KEY"))
     app.run(host=os.environ.get('IP'),
             port=int(os.environ.get('PORT')),
             debug=True)

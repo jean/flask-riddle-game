@@ -1,2 +1,6 @@
-Flask
+Flask==2.3.3
+werkzeug==2.3.8
 flask-qrcode
+opentelemetry-distro
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-flask
