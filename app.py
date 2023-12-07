@@ -13,7 +13,7 @@ reload(sys)
 
 app = Flask(__name__)
 qrcode = QRcode(app)
-#FlaskInstrumentor().instrument_app(app)
+FlaskInstrumentor().instrument_app(app)
 
 app.secret_key = 'some_secret'
 data = []
