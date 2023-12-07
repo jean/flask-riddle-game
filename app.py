@@ -5,15 +5,12 @@ from flask import Flask, render_template, redirect, request, url_for
 from flask_qrcode import QRcode
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
-from opentelemetry import trace
-tracer = trace.get_tracer("riddles.tracer")
-
 # Needed for encoding to utf8
 reload(sys)
 
 app = Flask(__name__)
 qrcode = QRcode(app)
-#FlaskInstrumentor().instrument_app(app)
+FlaskInstrumentor().instrument_app(app)
 
 app.secret_key = 'some_secret'
 data = []
@@ -27,13 +24,11 @@ def write_to_file(filename, data):
 
 #This is where the riddles live
 def riddle():
-    with tracer.start_as_current_span("riddle") as linespan: #otel
-        riddles = []
-        with open("data/-riddles.txt", "r") as e:
-            lines = e.read().splitlines()
-        for line in lines:
-            linespan.set_attribute("line", line) #otel
-            riddles.append(line)
+    riddles = []
+    with open("data/-riddles.txt", "r") as e:
+        lines = e.read().splitlines()
+    for line in lines:
+        riddles.append(line)
     return riddles
 
 
@@ -167,32 +162,28 @@ def game(username):
 
         write_to_file("data/user-" + username + "-guesses.txt", user_response + "\n")
 
-        with tracer.start_as_current_span("game") as gamespan:
-            # Compare the user's answer to the correct answer of the riddle
-            if answers[riddle_index] == user_response:
-                gamespan.set_attribute("answer", "good") #otel
-                # Correct answer
-                if riddle_index < 9:
-                    gamespan.set_attribute("progress", riddle_index) #otel
-                    # If riddle number is less than 10 & answer is correct: add score, clear wrong answers file and go to next riddle
-                    write_to_file("data/user-" + username + "-score.txt", str(add_to_score()) + "\n")
-                    clear_guesses(username)
-                    riddle_index += 1
-                else:
-                    # If right answer on LAST riddle: add score, submit score to highscore file and redirect to congrats page
-                    write_to_file("data/user-" + username + "-score.txt", str(add_to_score()) + "\n")
-                    final_score(username)
-                    return redirect(url_for('congrats', username=username, score=end_score(username)))
-
+        # Compare the user's answer to the correct answer of the riddle
+        if answers[riddle_index] == user_response:
+            # Correct answer
+            if riddle_index < 9:
+                # If riddle number is less than 10 & answer is correct: add score, clear wrong answers file and go to next riddle
+                write_to_file("data/user-" + username + "-score.txt", str(add_to_score()) + "\n")
+                clear_guesses(username)
+                riddle_index += 1
             else:
-                gamespan.set_attribute("answer", "bad") #otel
-                # Incorrect answer
-                if attempts_remaining() > 0:
-                    # if answer was wrong and more than 0 attempts remaining, reload current riddle
-                    riddle_index = riddle_index
-                else:
-                    # If all attempts are used up, redirect to Gameover page
-                    return redirect(url_for('gameover', username=username))
+                # If right answer on LAST riddle: add score, submit score to highscore file and redirect to congrats page
+                write_to_file("data/user-" + username + "-score.txt", str(add_to_score()) + "\n")
+                final_score(username)
+                return redirect(url_for('congrats', username=username, score=end_score(username)))
+
+        else:
+            # Incorrect answer
+            if attempts_remaining() > 0:
+                # if answer was wrong and more than 0 attempts remaining, reload current riddle
+                riddle_index = riddle_index
+            else:
+                # If all attempts are used up, redirect to Gameover page
+                return redirect(url_for('gameover', username=username))
 
     return render_template("game.html",
                             username=username, riddle_index=riddle_index, riddles=riddles,
