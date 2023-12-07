@@ -22,25 +22,25 @@
 
     <div class="col-md-12">
       <h4>Attempts remaining: {{remaining_attempts}}</h4>
-    </div>
+      <hr/>
+      <div class="row text-center">
 
-  </div>
-
-</div>
-<div class="container game-extras">
-  <div class="row fixed-bottom text-center">
-
-    <div class="col-md-6 col-xs-12">
-      <h4>Incorrect Answers:</h4>
-      {% for attempt in attempts %}
-      <p> {{ attempt }} </p>
-      {% endfor %}
-    </div>
-
-    <div class="col-md-6 col-xs-12">
-      <h4>Current Score:</h4>
-      <p> {{ score }} </p>
-    </div>
+        <div class="col-md-6 col-xs-12">
+          <h4>Incorrect Answers:</h4>
+          {% for attempt in attempts %}
+          <p> {{ attempt }} </p>
+          {% else %}
+          <p>None yet! Keep going ..</p>
+          {% endfor %}
+        </div>
+    
+        <div class="col-md-6 col-xs-12">
+          <h4>Current Score:</h4>
+          <p> {{ score }} </p>
+        </div>
+    
+      </div>
+      </div>
 
   </div>
 
