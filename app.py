@@ -6,7 +6,12 @@ from flask_qrcode import QRcode
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from opentelemetry import trace
+from opentelemetry.metrics import get_meter_provider
 tracer = trace.get_tracer("riddles.tracer")
+meter = get_meter_provider().get_meter("flask-riddle-game")
+good_guess_counter = meter.create_counter("good_guess_count")
+bad_guess_counter = meter.create_counter("bad_guess_count")
+
 
 # Needed for encoding to utf8
 reload(sys)
@@ -174,6 +179,7 @@ def game(username):
             # Compare the user's answer to the correct answer of the riddle
             if answers[riddle_index] == user_response:
                 gamespan.set_attribute("app.answer", "good") #otel
+                good_guess_counter.add(1) #otel
                 # Correct answer
                 if riddle_index < 9:
                     gamespan.set_attribute("app.progress", riddle_index) #otel
@@ -189,6 +195,7 @@ def game(username):
 
             else:
                 gamespan.set_attribute("app.answer", "bad") #otel
+                bad_guess_counter.add(1) #otel
                 # Incorrect answer
                 if attempts_remaining() > 0:
                     # if answer was wrong and more than 0 attempts remaining, reload current riddle
