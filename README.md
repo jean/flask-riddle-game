@@ -1,3 +1,28 @@
+# OpenTelemetry demo
+
+This repo serves to illustrate the very basics of instrumenting a simple Flask app using OpenTelemetry
+
+#### Run the Collector
+
+Grab the docker image: `docker pull otel/opentelemetry-collector-contrib`
+
+Run it, opening the required ports:
+- OTLP receiver on 4317
+- zPages at 55679 (dunno what that is)
+- metrics endpoint on 8888 (browse at `...:8888/metrics)
+
+Redirect `stderr` to a file if you want to look at it later.
+
+```
+docker run -v $(pwd)/collector-config.yaml -p 0.0.0.0:4317:4317 -p 127.0.0.1:55679:55679 -p 0.0.0.0:8888:8888 otel/opentelemetry-collector-contrib  2> collector.logs
+```
+
+#### Run Flask instrumented
+
+```
+OTEL_EXPORTER_OTLP_INSECURE=true opentelemetry-instrument flask run 
+```
+
 # Riddle Me This Game
 
 ### Description
