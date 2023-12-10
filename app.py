@@ -13,7 +13,7 @@ reload(sys)
 
 app = Flask(__name__)
 qrcode = QRcode(app)
-FlaskInstrumentor().instrument_app(app)
+#FlaskInstrumentor().instrument_app(app)
 
 app.secret_key = 'some_secret'
 data = []
@@ -21,18 +21,19 @@ data = []
 
 # Good ol' write to file function
 def write_to_file(filename, data):
-    with open(filename, "a+") as file:
-        file.writelines(data)
+    with tracer.start_as_current_span("app.write_to_file") as span: #otel
+        with open(filename, "a+") as file:
+            file.writelines(data)
 
 
 #This is where the riddles live
 def riddle():
-    with tracer.start_as_current_span("riddle") as linespan: #otel
+    with tracer.start_as_current_span("app.riddle") as span: #otel
         riddles = []
         with open("data/-riddles.txt", "r") as e:
             lines = e.read().splitlines()
+        span.set_attribute("app.riddle_count", len(lines)) #otel
         for line in lines:
-            linespan.set_attribute("line", line) #otel
             riddles.append(line)
     return riddles
 
@@ -168,12 +169,14 @@ def game(username):
         write_to_file("data/user-" + username + "-guesses.txt", user_response + "\n")
 
         with tracer.start_as_current_span("game") as gamespan:
+            gamespan.set_attribute("app.username", username) #otel
+            if 'o' in username: import time; time.sleep(2)
             # Compare the user's answer to the correct answer of the riddle
             if answers[riddle_index] == user_response:
-                gamespan.set_attribute("answer", "good") #otel
+                gamespan.set_attribute("app.answer", "good") #otel
                 # Correct answer
                 if riddle_index < 9:
-                    gamespan.set_attribute("progress", riddle_index) #otel
+                    gamespan.set_attribute("app.progress", riddle_index) #otel
                     # If riddle number is less than 10 & answer is correct: add score, clear wrong answers file and go to next riddle
                     write_to_file("data/user-" + username + "-score.txt", str(add_to_score()) + "\n")
                     clear_guesses(username)
@@ -185,7 +188,7 @@ def game(username):
                     return redirect(url_for('congrats', username=username, score=end_score(username)))
 
             else:
-                gamespan.set_attribute("answer", "bad") #otel
+                gamespan.set_attribute("app.answer", "bad") #otel
                 # Incorrect answer
                 if attempts_remaining() > 0:
                     # if answer was wrong and more than 0 attempts remaining, reload current riddle
