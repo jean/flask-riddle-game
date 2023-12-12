@@ -4,7 +4,10 @@ This repo serves to illustrate the very basics of instrumenting a simple Flask a
 
 #### Run the Collector
 
-Grab the docker image: `docker pull otel/opentelemetry-collector-contrib`
+Grab the docker image: 
+```bash
+docker pull otel/opentelemetry-collector-contrib
+```
 
 Run it, opening the required ports:
 - OTLP receiver on 4317
@@ -13,7 +16,15 @@ Run it, opening the required ports:
 Redirect `stderr` to a file if you want to look at it later.
 
 ```bash
-docker run -v $(pwd)/collector-config.yaml -p 0.0.0.0:4317:4317 -p 127.0.0.1:55679:55679 -p 0.0.0.0:8888:8888 otel/opentelemetry-collector-contrib  2> collector.logs
+docker run \
+    -e HONEYCOMB_TOKEN \
+    -e LOGZ_TOKEN \
+    -v $(pwd)/collector-config.yaml:/etc/otelcol-contrib/config.yaml \
+    -p 0.0.0.0:4317:4317 \
+    -p 0.0.0.0:55679:55679 \
+    -p 0.0.0.0:8888:8888 \
+    otel/opentelemetry-collector-contrib
+
 ```
 
 #### Run Flask instrumented
