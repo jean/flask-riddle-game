@@ -8,19 +8,33 @@ Grab the docker image: `docker pull otel/opentelemetry-collector-contrib`
 
 Run it, opening the required ports:
 - OTLP receiver on 4317
-- zPages at 55679 (dunno what that is)
 - metrics endpoint on 8888 (browse at `...:8888/metrics)
 
 Redirect `stderr` to a file if you want to look at it later.
 
-```
+```bash
 docker run -v $(pwd)/collector-config.yaml -p 0.0.0.0:4317:4317 -p 127.0.0.1:55679:55679 -p 0.0.0.0:8888:8888 otel/opentelemetry-collector-contrib  2> collector.logs
 ```
 
 #### Run Flask instrumented
 
-```
-OTEL_EXPORTER_OTLP_INSECURE=true opentelemetry-instrument flask run 
+```bash
+# Straight to HoneyComb
+opentelemetry-instrument \
+    --exporter_otlp_headers x-honeycomb-team=$HONEYCOMB_TOKEN,x-honeycomb-dataset=flask-riddle-game-metrics \
+    --exporter_otlp_endpoint https://api.honeycomb.io \
+    --service_name flask-riddle-game \
+    flask run 
+
+# To a local Collector
+opentelemetry-instrument \
+    --traces_exporter otlp \
+    --metrics_exporter none \
+    --service_name flask-riddle-game \
+    --exporter_otlp_endpoint http://localhost:4317 \
+    --exporter_otlp_insecure true \
+    flask run 
+
 ```
 
 # Riddle Me This Game
