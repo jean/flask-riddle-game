@@ -11,7 +11,7 @@ exporters:
   otlp:
     endpoint: "api.honeycomb.io:443"
     headers:
-      "x-honeycomb-team": "cHPLvVrtRYjMqNcVwkAauD"
+      "x-honeycomb-team": "${env:HONEYCOMB_TOKEN}"
 
 service:
   pipelines:
